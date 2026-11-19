@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.1.1";
+const CARD_VERSION = "0.1.2";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
@@ -136,6 +136,7 @@ export class DateTimeStepperCard extends LitElement {
         },
         {
           name: "layout",
+          default: "card",
           selector: {
             select: {
               mode: "dropdown",
@@ -150,9 +151,9 @@ export class DateTimeStepperCard extends LitElement {
           type: "grid",
           name: "",
           schema: [
-            { name: "minute_step", selector: { number: { min: 1, max: 60, mode: "box", unit_of_measurement: "min" } } },
-            { name: "hour_step", selector: { number: { min: 1, max: 12, mode: "box", unit_of_measurement: "h" } } },
-            { name: "commit_delay", selector: { number: { min: 0, max: 10000, step: 100, mode: "box", unit_of_measurement: "ms" } } },
+            { name: "minute_step", default: 15, selector: { number: { min: 1, max: 60, mode: "box", unit_of_measurement: "min" } } },
+            { name: "hour_step", default: 1, selector: { number: { min: 1, max: 12, mode: "box", unit_of_measurement: "h" } } },
+            { name: "commit_delay", default: 1000, selector: { number: { min: 0, max: 10000, step: 100, mode: "box", unit_of_measurement: "ms" } } },
           ],
         },
         {
@@ -171,8 +172,8 @@ export class DateTimeStepperCard extends LitElement {
           type: "grid",
           name: "",
           schema: [
-            { name: "show_relative", selector: { boolean: {} } },
-            { name: "allow_past", selector: { boolean: {} } },
+            { name: "show_relative", default: true, selector: { boolean: {} } },
+            { name: "allow_past", default: true, selector: { boolean: {} } },
           ],
         },
       ],
