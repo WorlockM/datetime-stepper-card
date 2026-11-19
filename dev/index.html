@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DateTime Stepper Card – dev harness</title>
+    <style>
+      :root {
+        --primary-color: #03a9f4;
+        --state-icon-color: #44739e;
+        --primary-text-color: #e1e1e1;
+        --secondary-text-color: #9b9b9b;
+        --secondary-background-color: #282828;
+        --divider-color: rgba(225, 225, 225, 0.12);
+        --error-color: #db4437;
+        --card-background-color: #1c1c1c;
+      }
+      body {
+        background: #111;
+        color: var(--primary-text-color);
+        font-family: Roboto, system-ui, sans-serif;
+        margin: 0;
+        padding: 16px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        max-width: 560px;
+      }
+      h2 {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--secondary-text-color);
+        margin: 12px 0 -8px;
+      }
+      ha-card {
+        display: block;
+        background: var(--card-background-color);
+        border: 1px solid var(--divider-color);
+        border-radius: 12px;
+      }
+      pre {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid" id="grid"></div>
+    <pre id="log"></pre>
+    <script>
+      customElements.define("ha-card", class extends HTMLElement {});
+      customElements.define(
+        "ha-state-icon",
+        class extends HTMLElement {
+          connectedCallback() {
+            this.innerHTML =
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm.5 5v5.25l4.5 2.67-.75 1.23L11 13V7h1.5z"/></svg>';
+          }
+        },
+      );
+
+      const pad = (n) => String(n).padStart(2, "0");
+      const states = {
+        "input_datetime.car_ready_by": {
+          entity_id: "input_datetime.car_ready_by",
+          state: "2026-11-20 08:00:00",
+          attributes: { friendly_name: "Ready by", has_date: true, has_time: true },
+        },
+        "datetime.charger_deadline": {
+          entity_id: "datetime.charger_deadline",
+          state: "2026-11-20T06:30:00+00:00",
+          attributes: { friendly_name: "Charger deadline (datetime)" },
+        },
+        "input_datetime.wake_up": {
+          entity_id: "input_datetime.wake_up",
+          state: "06:45:00",
+          attributes: { friendly_name: "Wake up (time only)", has_date: false, has_time: true },
+        },
+        "input_datetime.holiday": {
+          entity_id: "input_datetime.holiday",
+          state: "2026-12-24",
+          attributes: { friendly_name: "Holiday (date only)", has_date: true, has_time: false },
+        },
+      };
+      const log = (msg) => (document.getElementById("log").textContent = msg + "\n" + document.getElementById("log").textContent);
+      const cards = [];
+      let hass;
+      function makeHass() {
+        hass = {
+          states: { ...states },
+          config: { time_zone: "Europe/Amsterdam" },
+          locale: { language: new URLSearchParams(location.search).get("lang") || "en", time_format: "24", time_zone: "server" },
+          callService: async (domain, service, data) => {
+            log(`${domain}.${service} ${JSON.stringify(data)}`);
+            const s = states[data.entity_id];
+            if (domain === "datetime") s.state = data.datetime.replace(".000Z", "+00:00");
+            else s.state = data.datetime ?? data.date ?? data.time;
+            setTimeout(() => {
+              makeHass();
+              cards.forEach((c) => (c.hass = hass));
+            }, 150);
+          },
+        };
+      }
+      makeHass();
+      const configs = [
+        ["Row layout", { entity: "input_datetime.car_ready_by", name: "Uiterlijk vol om", layout: "row" }],
+        ["Card layout with quick buttons", { entity: "input_datetime.car_ready_by", name: "Uiterlijk vol om", layout: "card", quick_buttons: ["today", "tomorrow"] }],
+        ["datetime entity, no past allowed", { entity: "datetime.charger_deadline", layout: "card", allow_past: false, commit_delay: 0 }],
+        ["Time-only input_datetime", { entity: "input_datetime.wake_up", layout: "row", minute_step: 5 }],
+        ["Date-only input_datetime", { entity: "input_datetime.holiday", layout: "card" }],
+        ["Missing entity", { entity: "input_datetime.nope", layout: "row" }],
+      ];
+    </script>
+    <script src="./datetime-stepper-card.iife.js"></script>
+    <script>
+      const grid = document.getElementById("grid");
+      for (const [title, cfg] of configs) {
+        const h = document.createElement("h2");
+        h.textContent = title;
+        grid.append(h);
+        const el = document.createElement("datetime-stepper-card");
+        el.setConfig({ type: "custom:datetime-stepper-card", ...cfg });
+        el.hass = hass;
+        grid.append(el);
+        cards.push(el);
+      }
+    </script>
+  </body>
+</html>

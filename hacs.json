@@ -1,0 +1,6 @@
+{
+  "name": "DateTime Stepper Card",
+  "filename": "datetime-stepper-card.js",
+  "render_readme": true,
+  "homeassistant": "2024.8.0"
+}

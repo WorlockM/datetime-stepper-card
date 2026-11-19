@@ -1,0 +1,4 @@
+node_modules/
+dist/
+dev/*.iife.js
+.DS_Store
