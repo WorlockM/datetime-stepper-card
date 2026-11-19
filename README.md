@@ -30,7 +30,7 @@ Works with `input_datetime` helpers (date + time, date only, time only) and `dat
 
 ## Installation
 
-### Marketplace
+### Marketplace (formerly HACS)
 
 1. Go to **Settings → Marketplace**.
 2. Open the menu (⋮) → **Custom repositories**, or select **Add from link**.
