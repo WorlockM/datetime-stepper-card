@@ -30,11 +30,19 @@ Works with `input_datetime` helpers (date + time, date only, time only) and `dat
 
 ## Installation
 
-### Marketplace, formerly HACS (custom repository)
+### Marketplace (Home Assistant 2026.11 and later)
 
-The Home Assistant Community Store (HACS) is now called **Marketplace**. It is the same thing: if your installation still shows HACS, follow the same steps there.
+Since Home Assistant 2026.11 the Home Assistant Community Store (HACS) is built in as the **Marketplace**. Your existing HACS downloads move over automatically.
 
-1. In Marketplace, open the menu (⋮) → **Custom repositories**.
+1. Go to **Settings → Marketplace** (administrators only).
+2. Select **Add from link** in the top right.
+3. Under **GitHub link**, enter `WorlockM/datetime-stepper-card` and select **Add**. If the Marketplace asks for a type, choose **Dashboard**.
+4. Open **DateTime Stepper Card** in the list and select **Install**. The Marketplace adds the dashboard resource for you.
+5. Reload your browser.
+
+### HACS (Home Assistant 2026.10 and earlier)
+
+1. In HACS, open the menu (⋮) → **Custom repositories**.
 2. Add `https://github.com/WorlockM/datetime-stepper-card` with type **Dashboard**.
 3. Install **DateTime Stepper Card** and reload your browser.
 
