@@ -12,11 +12,14 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.1.2";
+const CARD_VERSION = "0.2.0";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
 type QuickButton = "today" | "tomorrow";
+
+export type DateFormat = "long" | "short" | "numeric";
+const DATE_FORMATS: DateFormat[] = ["long", "short", "numeric"];
 
 export interface DateTimeStepperCardConfig {
   type: string;
@@ -30,6 +33,8 @@ export interface DateTimeStepperCardConfig {
   quick_buttons?: QuickButton[];
   commit_delay?: number;
   allow_past?: boolean;
+  date_format?: DateFormat;
+  language?: string;
 }
 
 /* Minimal slice of the Home Assistant frontend types used by this card. */
@@ -100,6 +105,9 @@ export class DateTimeStepperCard extends LitElement {
     if (config.layout && !["row", "card"].includes(config.layout)) {
       throw new Error("layout must be 'row' or 'card'");
     }
+    if (config.date_format && !DATE_FORMATS.includes(config.date_format)) {
+      throw new Error("date_format must be 'long', 'short' or 'numeric'");
+    }
     this._config = config;
   }
 
@@ -151,6 +159,38 @@ export class DateTimeStepperCard extends LitElement {
           type: "grid",
           name: "",
           schema: [
+            {
+              name: "date_format",
+              default: "long",
+              selector: {
+                select: {
+                  mode: "dropdown",
+                  options: [
+                    { value: "long", label: "Long (Thu, Nov 19)" },
+                    { value: "short", label: "Short (Nov 19)" },
+                    { value: "numeric", label: "Numeric (11/19)" },
+                  ],
+                },
+              },
+            },
+            {
+              name: "language",
+              selector: {
+                select: {
+                  mode: "dropdown",
+                  options: [
+                    { value: "en", label: "English" },
+                    { value: "nl", label: "Nederlands" },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: "grid",
+          name: "",
+          schema: [
             { name: "minute_step", default: 15, selector: { number: { min: 1, max: 60, mode: "box", unit_of_measurement: "min" } } },
             { name: "hour_step", default: 1, selector: { number: { min: 1, max: 12, mode: "box", unit_of_measurement: "h" } } },
             { name: "commit_delay", default: 1000, selector: { number: { min: 0, max: 10000, step: 100, mode: "box", unit_of_measurement: "ms" } } },
@@ -183,6 +223,8 @@ export class DateTimeStepperCard extends LitElement {
           name: "Name",
           icon: "Icon",
           layout: "Layout",
+          date_format: "Date format",
+          language: "Language",
           minute_step: "Minute step",
           hour_step: "Hour step",
           commit_delay: "Save delay",
@@ -194,6 +236,8 @@ export class DateTimeStepperCard extends LitElement {
         ({
           commit_delay: "Wait this long after the last tap before saving (0 = save on every tap)",
           minute_step: "Minutes snap to multiples of this value",
+          date_format: "Row layout only",
+          language: "Empty: follow Home Assistant",
         })[s.name],
     };
   }
@@ -212,6 +256,9 @@ export class DateTimeStepperCard extends LitElement {
   private get _commitDelay(): number {
     return clampInt(this._config.commit_delay, 0, 10_000, 1000);
   }
+  private get _dateFormat(): DateFormat {
+    return this._config.date_format ?? "long";
+  }
   private get _showRelative(): boolean {
     return this._config.show_relative ?? true;
   }
@@ -219,7 +266,9 @@ export class DateTimeStepperCard extends LitElement {
     return this._config.allow_past ?? true;
   }
   private get _language(): string {
-    return this.hass?.locale?.language ?? this.hass?.language ?? navigator.language ?? "en";
+    return (
+      this._config?.language || this.hass?.locale?.language || this.hass?.language || navigator.language || "en"
+    );
   }
   private _t(key: StringKey, vars?: Record<string, string>): string {
     return localize(this._language, key, vars);
@@ -461,6 +510,18 @@ export class DateTimeStepperCard extends LitElement {
 
   /* ---------- Formatting ---------- */
 
+  /** Day label of the row layout, in the configured date format. */
+  private _dayLabel(wall: number): string {
+    switch (this._dateFormat) {
+      case "short":
+        return this._fmt(wall, { day: "numeric", month: "short" });
+      case "numeric":
+        return this._fmt(wall, { day: "numeric", month: "numeric" });
+      default:
+        return this._fmt(wall, { weekday: "short", day: "numeric", month: "short" });
+    }
+  }
+
   private _fmt(wall: number, opts: Intl.DateTimeFormatOptions): string {
     return new Intl.DateTimeFormat(this._language, { ...opts, timeZone: "UTC" }).format(new Date(wall));
   }
@@ -564,7 +625,7 @@ export class DateTimeStepperCard extends LitElement {
         ${info.hasDate
           ? html`<div class="segment">
               ${this._stepButton("day", -1, this._t("day"))}
-              <span class="value day">${this._fmt(wall, { weekday: "short", day: "numeric", month: "short" })}</span>
+              <span class="value day ${this._dateFormat}">${this._dayLabel(wall)}</span>
               ${this._stepButton("day", 1, this._t("day"))}
             </div>`
           : nothing}
@@ -767,6 +828,12 @@ export class DateTimeStepperCard extends LitElement {
     }
     .value.day {
       min-width: 84px;
+    }
+    .value.day.short {
+      min-width: 60px;
+    }
+    .value.day.numeric {
+      min-width: 44px;
     }
     .value.time {
       display: inline-flex;

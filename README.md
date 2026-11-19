@@ -28,7 +28,7 @@ Works with `input_datetime` helpers (date + time, date only, time only) and `dat
 - Optionally blocks times in the past.
 - Follows your Home Assistant theme, language, 12/24-hour setting and time zone preference.
 - Visual editor in the dashboard UI.
-- English and Dutch translations.
+- English and Dutch translations, also selectable per card.
 
 ## Installation
 
@@ -71,6 +71,8 @@ quick_buttons:
 | `name`          | string  | friendly name    | Name shown on the card.                                                  |
 | `icon`          | string  | entity icon      | Icon shown on the card.                                                  |
 | `layout`        | string  | `card`           | `row` (compact) or `card` (large buttons).                               |
+| `date_format`   | string  | `long`           | Day label in the `row` layout: `long` (Thu, Nov 19), `short` (Nov 19) or `numeric` (11/19). Follows your language. |
+| `language`      | string  | HA language      | Language of the card's texts and dates, for example `nl`, regardless of the Home Assistant language. Texts are available in `en` and `nl`; other languages only change the dates. |
 | `minute_step`   | number  | `15`             | Minutes per step; minutes snap to multiples of this value.               |
 | `hour_step`     | number  | `1`              | Hours per step.                                                          |
 | `commit_delay`  | number  | `1000`           | Milliseconds to wait after the last tap before saving. `0` saves on every tap. |

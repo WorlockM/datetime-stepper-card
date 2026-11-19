@@ -49,6 +49,7 @@
     <script>
       const params = new URLSearchParams(location.search);
       document.documentElement.className = params.get("theme") || "dark";
+      if (params.get("width")) document.getElementById("wrap").style.width = params.get("width") + "px";
       customElements.define(
         "ha-card",
         class extends HTMLElement {
@@ -96,6 +97,9 @@
         type: "custom:datetime-stepper-card",
         entity: "input_datetime.car_ready_by",
         layout,
+        ...(params.get("date_format") ? { date_format: params.get("date_format") } : {}),
+        ...(params.get("language") ? { language: params.get("language") } : {}),
+        ...(params.get("name") ? { name: params.get("name"), icon: "mdi:car-clock" } : {}),
         ...(layout === "card" ? { quick_buttons: ["today", "tomorrow"] } : {}),
       });
       el.hass = window.hass;
