@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.1.0";
+const CARD_VERSION = "0.1.1";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
@@ -108,9 +108,10 @@ export class DateTimeStepperCard extends LitElement {
   }
 
   getGridOptions() {
+    // Height follows the content: the row layout wraps on narrow screens.
     return this._layout === "card"
-      ? { columns: 6, rows: 3, min_columns: 4, min_rows: 3 }
-      : { columns: 12, rows: 1, min_columns: 6, min_rows: 1 };
+      ? { columns: 12, rows: "auto", min_columns: 6 }
+      : { columns: 12, rows: "auto", min_columns: 6 };
   }
 
   static getStubConfig(hass: HomeAssistant): Partial<DateTimeStepperCardConfig> {
@@ -650,6 +651,10 @@ export class DateTimeStepperCard extends LitElement {
       flex: 1 1 140px;
       cursor: pointer;
     }
+    .row .header {
+      gap: 12px;
+      flex: 1 1 96px;
+    }
     .icon {
       flex: none;
       width: 40px;
@@ -741,13 +746,16 @@ export class DateTimeStepperCard extends LitElement {
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
-      gap: 8px 16px;
+      gap: 8px 12px;
       margin-left: auto;
+    }
+    .row {
+      --dsc-button-size: 32px;
     }
     .segment {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     .value {
       font-size: 16px;
@@ -757,7 +765,7 @@ export class DateTimeStepperCard extends LitElement {
       font-variant-numeric: tabular-nums;
     }
     .value.day {
-      min-width: 92px;
+      min-width: 84px;
     }
     .value.time {
       display: inline-flex;
