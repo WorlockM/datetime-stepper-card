@@ -8,21 +8,13 @@ Works with `input_datetime` helpers (date + time, date only, time only) and `dat
 
 **`row`**: a single compact line that fits where a regular entity row would go. Tap the hours or the minutes to choose what the time `−`/`+` buttons change.
 
-```
-[icon] Ready by            (−) Fri, Nov 20 (+)   (−) 08:00 (+)
-       in 13 h 20 min
-```
+<img src="https://raw.githubusercontent.com/WorlockM/datetime-stepper-card/main/images/row-dark.png" alt="Row layout, dark theme" width="512">
+<img src="https://raw.githubusercontent.com/WorlockM/datetime-stepper-card/main/images/row-light.png" alt="Row layout, light theme" width="512">
 
 **`card`**: large stepper columns for day, hour and minute, with optional Today/Tomorrow buttons.
 
-```
-[icon] Ready by                    [Today] [Tomorrow]
-       in 13 h 20 min
-          (+)     (+)     (+)
-          20   |  08   :  00
-       Fri · Nov   h      min
-          (−)     (−)     (−)
-```
+<img src="https://raw.githubusercontent.com/WorlockM/datetime-stepper-card/main/images/card-dark.png" alt="Card layout, dark theme" width="512">
+<img src="https://raw.githubusercontent.com/WorlockM/datetime-stepper-card/main/images/card-light.png" alt="Card layout, light theme" width="512">
 
 ## Features
 
@@ -99,6 +91,8 @@ npm run typecheck
 ```
 
 `dev/index.html` is a standalone harness with a mocked `hass` object. Build it with `npm run harness` and serve the `dev` folder, for example with `python3 -m http.server --directory dev`.
+
+The README screenshots come from `dev/screenshot.html?layout=row|card&theme=dark|light`, rendered at 512 px wide with a device scale factor of 2.
 
 ## License
 

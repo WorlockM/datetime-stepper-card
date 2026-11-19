@@ -50,7 +50,16 @@
     <div class="grid" id="grid"></div>
     <pre id="log"></pre>
     <script>
-      customElements.define("ha-card", class extends HTMLElement {});
+      customElements.define(
+        "ha-card",
+        class extends HTMLElement {
+          connectedCallback() {
+            // Page styles do not reach into the card's shadow DOM, so style the stub inline.
+            this.style.cssText =
+              "display:block;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:12px";
+          }
+        },
+      );
       customElements.define(
         "ha-state-icon",
         class extends HTMLElement {
