@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.2.1";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
@@ -619,9 +619,8 @@ export class DateTimeStepperCard extends LitElement {
         ${label}
       </button>`;
     return html`<div class="row ${info.available ? "" : "disabled"}">
-      ${this._header(info, wall)}
+      ${this._header(info, wall)} ${this._quickButtons(info, wall)}
       <div class="controls">
-        ${this._quickButtons(info, wall)}
         ${info.hasDate
           ? html`<div class="segment">
               ${this._stepButton("day", -1, this._t("day"))}
@@ -715,7 +714,8 @@ export class DateTimeStepperCard extends LitElement {
     }
     .row .header {
       gap: 12px;
-      flex: 1 1 96px;
+      /* Never narrower than this: wrap the controls instead of squeezing the name. */
+      flex: 1000 0 120px;
     }
     .icon {
       flex: none;
@@ -737,6 +737,9 @@ export class DateTimeStepperCard extends LitElement {
     .secondary {
       font-size: 12px;
       color: var(--secondary-text-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .secondary.past {
       color: var(--error-color, #db4437);
@@ -803,12 +806,26 @@ export class DateTimeStepperCard extends LitElement {
       flex-wrap: wrap;
       gap: 8px 16px;
     }
+    /*
+     * Row layout: header, quick buttons and controls on one line when they fit.
+     * Otherwise the quick buttons stay next to the name and the controls take
+     * their own line, day on the left and time on the right. The header's large
+     * flex-grow keeps the controls compact while they share a line.
+     */
+    .row .chips {
+      flex: none;
+    }
     .controls {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: 8px 12px;
+      flex: 1 1 auto;
+      max-width: 420px;
+      margin-left: auto;
+    }
+    .controls > .segment:last-child {
       margin-left: auto;
     }
     .row {

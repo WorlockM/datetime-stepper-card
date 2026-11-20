@@ -100,7 +100,7 @@
         ...(params.get("date_format") ? { date_format: params.get("date_format") } : {}),
         ...(params.get("language") ? { language: params.get("language") } : {}),
         ...(params.get("name") ? { name: params.get("name"), icon: "mdi:car-clock" } : {}),
-        ...(layout === "card" ? { quick_buttons: ["today", "tomorrow"] } : {}),
+        ...(layout === "card" || params.get("quick") ? { quick_buttons: ["today", "tomorrow"] } : {}),
       });
       el.hass = window.hass;
       document.getElementById("wrap").append(el);
