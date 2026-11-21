@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.2.1";
+const CARD_VERSION = "0.2.2";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
