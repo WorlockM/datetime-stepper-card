@@ -1,6 +1,6 @@
 {
   "name": "datetime-stepper-card",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Home Assistant Lovelace card to set a date and time with plus and minus buttons.",
   "type": "module",
   "private": true,

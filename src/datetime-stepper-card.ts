@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.2.3";
+const CARD_VERSION = "0.2.4";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
@@ -74,6 +74,8 @@ export class DateTimeStepperCard extends LitElement {
     _pendingWall: { state: true },
     _timeUnit: { state: true },
     _now: { state: true },
+    _editingUnit: { state: true },
+    _editValue: { state: true },
   };
 
   declare hass: HomeAssistant;
@@ -81,6 +83,8 @@ export class DateTimeStepperCard extends LitElement {
   declare _pendingWall: number | undefined;
   declare _timeUnit: "hour" | "minute";
   declare _now: number;
+  declare _editingUnit: "hour" | "minute" | null;
+  declare _editValue: string;
 
   private _commitTimer?: number;
   private _repeatTimer?: number;
@@ -92,6 +96,8 @@ export class DateTimeStepperCard extends LitElement {
     super();
     this._timeUnit = "hour";
     this._now = Date.now();
+    this._editingUnit = null;
+    this._editValue = "";
   }
 
   /* ---------- Lovelace API ---------- */
@@ -363,6 +369,69 @@ export class DateTimeStepperCard extends LitElement {
     }
   }
 
+  protected updated(changed: PropertyValues): void {
+    if (changed.has("_editingUnit") && this._editingUnit !== null) {
+      const input = this.renderRoot.querySelector<HTMLInputElement>(".edit-input");
+      input?.focus();
+      input?.select();
+    }
+  }
+
+  /* ---------- Inline editing (desktop only) ---------- */
+
+  private _isDesktop(): boolean {
+    return window.matchMedia("(pointer: fine)").matches;
+  }
+
+  private _startEdit(unit: "hour" | "minute", raw: string): void {
+    this._timeUnit = unit;
+    this._editValue = raw;
+    this._editingUnit = unit;
+  }
+
+  private _onEditKeydown(e: KeyboardEvent): void {
+    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+    else if (e.key === "Escape") this._editingUnit = null;
+  }
+
+  private _commitEdit(): void {
+    const unit = this._editingUnit;
+    this._editingUnit = null;
+    if (!unit) return;
+    const info = this._entityInfo();
+    if (!info?.available) return;
+    const wall = this._currentWall(info);
+    const v = parseInt(this._editValue, 10);
+    if (isNaN(v)) return;
+    const parts = partsFromWall(wall);
+    const dayStart = Math.floor(wall / DAY) * DAY;
+    let newWall: number;
+    if (unit === "hour") {
+      const h = Math.max(0, Math.min(23, v));
+      newWall = dayStart + h * 60 * MINUTE + parts.minute * MINUTE;
+    } else {
+      const m = Math.max(0, Math.min(59, v));
+      newWall = dayStart + parts.hour * 60 * MINUTE + m * MINUTE;
+    }
+    if (!info.hasDate) newWall = ((newWall % DAY) + DAY) % DAY;
+    this._setWall(this._clampPast(newWall, info));
+  }
+
+  private _editInput(unit: "hour" | "minute", cls: string): TemplateResult {
+    return html`<input
+      class="edit-input ${cls}"
+      type="number"
+      min="0"
+      max=${unit === "hour" ? "23" : "59"}
+      .value=${this._editValue}
+      @input=${(e: InputEvent) => { this._editValue = (e.target as HTMLInputElement).value; }}
+      @blur=${() => this._commitEdit()}
+      @keydown=${(e: KeyboardEvent) => this._onEditKeydown(e)}
+      @pointerdown=${(e: Event) => e.stopPropagation()}
+      @click=${(e: Event) => e.stopPropagation()}
+    />`;
+  }
+
   /* ---------- Stepping ---------- */
 
   private _step(unit: Unit, dir: 1 | -1): void {
@@ -608,16 +677,23 @@ export class DateTimeStepperCard extends LitElement {
 
   private _renderRow(info: EntityInfo, wall: number): TemplateResult {
     const hour = this._hourLabel(wall);
-    const minute = pad(partsFromWall(wall).minute);
-    const unitButton = (unit: "hour" | "minute", label: string) =>
-      html`<button
+    const rawParts = partsFromWall(wall);
+    const minute = pad(rawParts.minute);
+    const unitButton = (unit: "hour" | "minute", label: string) => {
+      if (this._editingUnit === unit) return this._editInput(unit, "unit");
+      const raw = unit === "hour" ? String(rawParts.hour) : String(rawParts.minute);
+      return html`<button
         class="unit ${this._timeUnit === unit ? "active" : ""}"
         aria-pressed=${this._timeUnit === unit}
         aria-label=${this._t("select_unit", { unit: this._t(unit === "hour" ? "hours" : "minutes") })}
-        @click=${() => (this._timeUnit = unit)}
+        @click=${() => {
+          this._timeUnit = unit;
+          if (this._isDesktop()) this._startEdit(unit, raw);
+        }}
       >
         ${label}
       </button>`;
+    };
     return html`<div class="row ${info.available ? "" : "disabled"}">
       ${this._header(info, wall)} ${this._quickButtons(info, wall)}
       <div class="controls">
@@ -645,14 +721,23 @@ export class DateTimeStepperCard extends LitElement {
 
   private _renderCard(info: EntityInfo, wall: number): TemplateResult {
     const hour = this._hourLabel(wall);
-    const minute = pad(partsFromWall(wall).minute);
-    const column = (unit: Unit, value: string, label: string, aria: string) =>
-      html`<div class="column">
+    const rawParts = partsFromWall(wall);
+    const minute = pad(rawParts.minute);
+    const column = (unit: Unit, value: string, label: string, aria: string) => {
+      const isTime = unit === "hour" || unit === "minute";
+      const raw = unit === "hour" ? String(rawParts.hour) : unit === "minute" ? String(rawParts.minute) : undefined;
+      return html`<div class="column">
         ${this._stepButton(unit, 1, aria)}
-        <div class="big">${value}</div>
+        ${this._editingUnit === unit
+          ? html`<div class="big">${this._editInput(unit as "hour" | "minute", "big-input")}</div>`
+          : html`<div
+              class="big${isTime ? " editable" : ""}"
+              @click=${isTime ? () => { if (this._isDesktop()) this._startEdit(unit as "hour" | "minute", raw!); } : undefined}
+            >${value}</div>`}
         <div class="label">${label}</div>
         ${this._stepButton(unit, -1, aria)}
       </div>`;
+    };
     return html`<div class="card ${info.available ? "" : "disabled"}">
       <div class="card-header">${this._header(info, wall)} ${this._quickButtons(info, wall)}</div>
       <div class="columns">
@@ -920,6 +1005,50 @@ export class DateTimeStepperCard extends LitElement {
     }
     .warning {
       color: var(--error-color, #db4437);
+    }
+
+    /* Inline edit input (desktop only) */
+    .edit-input {
+      font: inherit;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+      border: none;
+      border-bottom: 2px solid var(--primary-color);
+      border-radius: 4px 4px 0 0;
+      outline: none;
+      text-align: center;
+      padding: 2px 4px;
+      -moz-appearance: textfield;
+      width: 2.5ch;
+    }
+    .edit-input::-webkit-outer-spin-button,
+    .edit-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+    .edit-input.unit {
+      font-size: 16px;
+    }
+    .edit-input.big-input {
+      font-size: 30px;
+      line-height: 1.1;
+      width: 2.2ch;
+    }
+
+    /* Cursor hint on desktop for editable time values */
+    @media (pointer: fine) {
+      .unit {
+        cursor: text;
+      }
+      .big.editable {
+        cursor: text;
+        border-radius: 4px;
+        transition: background-color 120ms;
+      }
+      .big.editable:hover {
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      }
     }
   `;
 }
