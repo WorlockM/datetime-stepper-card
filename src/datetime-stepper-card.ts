@@ -12,7 +12,7 @@ import {
   wallFromInstant,
 } from "./time";
 
-const CARD_VERSION = "0.2.2";
+const CARD_VERSION = "0.2.3";
 
 type Unit = "day" | "hour" | "minute";
 type Layout = "row" | "card";
@@ -683,7 +683,9 @@ export class DateTimeStepperCard extends LitElement {
       >`;
     }
     const wall = this._currentWall(info);
-    return html`<ha-card class=${this._layout}>
+    // No layout class on ha-card: the .row rules would make ha-card a flex
+    // container and shrink the inner row to its content width.
+    return html`<ha-card>
       ${this._layout === "row" ? this._renderRow(info, wall) : this._renderCard(info, wall)}
     </ha-card>`;
   }
