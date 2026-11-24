@@ -4,8 +4,6 @@ A Home Assistant Lovelace card to set a date and time with **plus and minus butt
 
 Works with `input_datetime` helpers (date + time, date only, time only) and `datetime` entities from integrations.
 
-[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=WorlockM&repository=datetime-stepper-card&category=plugin)
-
 ## Layouts
 
 **`row`**: a single compact line that fits where a regular entity row would go. Tap the hours or the minutes to choose what the time `−`/`+` buttons change.
@@ -34,16 +32,15 @@ Works with `input_datetime` helpers (date + time, date only, time only) and `dat
 
 ### Marketplace (formerly HACS)
 
-The quickest way is the button below. It opens this repository in the Marketplace of your own Home Assistant.
+The card is in the Marketplace default list, so you do not need to add it as a custom repository. The quickest way is the button below. It opens the card in the Marketplace of your own Home Assistant.
 
 [![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=WorlockM&repository=datetime-stepper-card&category=plugin)
 
-Or add it yourself:
+Or find it yourself:
 
 1. Go to **Settings → Marketplace**.
-2. Open the menu (⋮) → **Custom repositories**, or select **Add from link**.
-3. Add `https://github.com/WorlockM/datetime-stepper-card` with type **Dashboard**.
-4. Install **DateTime Stepper Card** and reload your browser.
+2. Search for **DateTime Stepper Card**.
+3. Select **Download** and reload your browser.
 
 ### Manual
 
