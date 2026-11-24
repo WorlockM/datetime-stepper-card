@@ -1,0 +1,96 @@
+name: Bug report
+description: Something does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please check the [open issues](https://github.com/WorlockM/datetime-stepper-card/issues) first to see if it is already known.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happens
+      description: Describe the problem. What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add the card with the configuration below
+        2. Tap `+` on the hours
+        3. ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Card configuration
+      description: The YAML of the card, from the code editor in the dashboard.
+      render: yaml
+      placeholder: |
+        type: custom:datetime-stepper-card
+        entity: input_datetime.example
+        layout: card
+    validations:
+      required: true
+
+  - type: dropdown
+    id: entity_type
+    attributes:
+      label: Entity type
+      options:
+        - input_datetime (date and time)
+        - input_datetime (date only)
+        - input_datetime (time only)
+        - datetime entity from an integration
+    validations:
+      required: true
+
+  - type: input
+    id: card_version
+    attributes:
+      label: Card version
+      description: Shown in the Marketplace, or in the browser console when the card loads.
+      placeholder: "0.2.4"
+    validations:
+      required: true
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      description: Settings → About.
+      placeholder: "2026.11.1"
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: Browser or app
+      description: Browser with version, or the Companion app with OS and device.
+      placeholder: "Chrome 142 on Windows / Companion app on an Android tablet"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Browser console errors
+      description: Open the developer tools (F12) and copy any errors that mention the card.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images or a screen recording into this field.
+    validations:
+      required: false
